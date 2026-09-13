@@ -1,0 +1,38 @@
+# glottalmind-worker: talkingmind.cc's real Workers AI TTS service
+# (@cf/myshell-ai/melotts, see worker.js header for the full history).
+# Real, working worker.js was committed 2026-09-11 but never actually
+# deployed - no wrangler.toml existed, so `wrangler deploy` had nothing
+# to run against. Confirmed 2026-09-13: https://talkingmind.cc/api/health
+# and https://glottalmind-worker.jmobleyworks.workers.dev/api/health both
+# 404 (route/subdomain don't exist yet), and this session has no
+# Cloudflare credentials (`wrangler whoami` unauthenticated, no
+# MY_CLOUDFLARE_* env vars set) - so this file is prepared but NOT yet
+# deployed. Next real step: from a session with real Cloudflare auth,
+# `cd talkingmind.cc/glottalmind-worker && wrangler deploy`, then
+# live-verify GET /api/health and POST /api/tts against the resulting
+# *.workers.dev URL.
+name = "glottalmind-worker"
+main = "worker.js"
+compatibility_date = "2026-08-13"
+
+# Same account as every other jmobleyworks-pattern *-worker in this
+# portfolio (vendyai-com-worker, the weyland-*-worker family, etc.) -
+# matches the *.jmobleyworks.workers.dev subdomain already named for this
+# worker in the 2026-09-12 finding this file resolves.
+account_id = "f07be5f84583d0d100b05aeeae56870b"
+
+# Keep the workers.dev subdomain on - this worker has no [[routes]] block
+# yet (talkingmind.cc's zone routing is a separate, not-yet-scoped piece
+# of work), so *.workers.dev is the only way to reach it at all post-deploy.
+workers_dev = true
+
+[observability]
+enabled = true
+
+# Real, first-party Cloudflare Workers AI binding - account-level, no
+# extra provisioning needed. worker.js's POST /api/tts calls
+# env.AI.run("@cf/myshell-ai/melotts", ...) and returns a real 500 with
+# "AI binding not configured" if this block is missing, which is exactly
+# what was missing before this file existed.
+[ai]
+binding = "AI"
