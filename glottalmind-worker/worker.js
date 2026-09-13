@@ -74,28 +74,17 @@ export default {
         return jsonResponse({ error: `text exceeds max length of ${MAX_TEXT_LENGTH} characters (got ${text.length})` }, 400);
       }
 
-      if (!env.AI) {
-        return jsonResponse({ error: "AI binding not configured" }, 500);
-      }
-
-      try {
-        const result = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text });
-        if (!result || !result.audio) {
-          return jsonResponse({ error: "TTS model returned no audio" }, 502);
-        }
-        const audioBytes = decodeBase64Audio(result.audio);
-        return new Response(audioBytes, {
-          status: 200,
-          headers: {
-            "Content-Type": "audio/wav",
-            "Content-Length": String(audioBytes.length),
-            "Access-Control-Allow-Origin": "*",
-            "Cache-Control": "no-store",
-          },
-        });
-      } catch (err) {
-        return jsonResponse({ error: `TTS synthesis failed: ${err.message}` }, 502);
-      }
+      // Cloudflare Workers AI removed 2026-09-13 (real cost decision - John:
+      // stop using Workers AI anywhere across the conglomerate). This was
+      // this worker's only synthesis mechanism (@cf/myshell-ai/melotts via
+      // the [ai] binding, now removed from wrangler.toml), so /api/tts has
+      // no working backend right now - reported honestly below rather than
+      // silently returning empty/fake audio. This worker was never actually
+      // deployed (confirmed 2026-09-13: no live route/subdomain resolves),
+      // so this is a source-level fix, not a live regression - talkingmind.cc
+      // still needs a real, non-Workers-AI TTS backend before this endpoint
+      // can honestly work.
+      return jsonResponse({ error: "Text-to-speech is not currently available." }, 502);
     }
 
     return jsonResponse({ error: "Not found", path: url.pathname, method: request.method }, 404);

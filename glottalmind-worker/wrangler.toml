@@ -29,10 +29,13 @@ workers_dev = true
 [observability]
 enabled = true
 
-# Real, first-party Cloudflare Workers AI binding - account-level, no
-# extra provisioning needed. worker.js's POST /api/tts calls
-# env.AI.run("@cf/myshell-ai/melotts", ...) and returns a real 500 with
-# "AI binding not configured" if this block is missing, which is exactly
-# what was missing before this file existed.
-[ai]
-binding = "AI"
+# [ai] binding REMOVED 2026-09-13 (real cost decision - John: stop using
+# Cloudflare Workers AI anywhere across the conglomerate). worker.js's
+# POST /api/tts used to call env.AI.run("@cf/myshell-ai/melotts", ...) -
+# it now returns an honest "not currently available" response instead.
+# This worker was never actually deployed (confirmed 2026-09-13: no live
+# route/subdomain resolves), so removing this binding is a source-level
+# fix with zero live blast radius - but it also means talkingmind.cc's
+# GlottalMind TTS role (ventures.json commit 543fa0b) currently has no
+# working synthesis backend at all; a real non-Workers-AI TTS mechanism
+# would need to be found before this venture's core feature is real.
